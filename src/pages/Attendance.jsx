@@ -4,7 +4,7 @@ import{db}from'../firebase'
 import{ref,get,set,remove}from'firebase/database'
 import{getDaysInMonth,getDayName,getDow,isDayHoliday,isVacationDay,getWorkingDays,MONTHS,sortEmployees}from'../utils/dateUtils'
 
-const CYCLE={P:'A',A:'CL',CL:'P'}
+const CYCLE={'':'P',P:'A',A:'CL',CL:''}
 const PRESETS=[{l:'Principal Incharge',v:1000},{l:'Deputy Warden',v:500},{l:'Hostel Cleaning Gents',v:2000},{l:'Hostel Cleaning Ladies',v:1000},{l:'Custom',v:0}]
 
 function ExtrasModal({emp,extras,loan,onSave,onClose}){
@@ -119,7 +119,7 @@ export default function Attendance({month,year,role}){
   function getStatus(empId,day,staffType){
     if(isDayHoliday(year,month,day,staffType,holidays))return'H'
     if(isVacationDay(year,month,day,vacations))return'VL'
-    return att[empId]?.[`d${day}`]||'P'
+    return att[empId]?.[`d${day}`]||''
   }
 
   function handleCell(empId,day,staffType){
@@ -140,7 +140,7 @@ export default function Attendance({month,year,role}){
   function getSummary(empId,staffType){
     const wd=getWorkingDays(year,month,staffType,holidays,vacations)
     let p=0,cl=0,ab=0
-    wd.forEach(d=>{const s=att[empId]?.[`d${d}`]||'P';if(s==='P')p++;else if(s==='A')ab++;else if(s==='CL')cl++})
+    wd.forEach(d=>{const s=att[empId]?.[`d${d}`]||'P';if(s==='P'||s==='')p++;else if(s==='A')ab++;else if(s==='CL')cl++})
     const used=clBalance[empId]?.used||0,avail=Math.max(0,12-used),approved=Math.min(cl,avail)
     return{workDays:wd.length,present:p,clTaken:cl,absent:ab,lop:ab+(cl-approved),clAvailable:avail}
   }
@@ -197,7 +197,7 @@ export default function Attendance({month,year,role}){
           </td>
           {dayNums.map(d=>{
             const s=getStatus(emp.id,d,emp.staffType),locked=s==='H'||s==='VL'
-            return<td key={d} className={`att-cell att-${s}`} onClick={()=>!locked&&handleCell(emp.id,d,emp.staffType)} title={s==='VL'?'Vacation(Paid)':s}>{s}</td>
+            return<td key={d} className={`att-cell ${s?`att-${s}`:'att-blank'}`} onClick={()=>!locked&&handleCell(emp.id,d,emp.staffType)} title={s==='VL'?'Vacation(Paid)':s||'Unmarked'}>{s||'·'}</td>
           })}
           <td className="att-summary-cell">{sum.workDays}</td>
           <td className="att-summary-cell" style={{color:'#166534'}}>{sum.present}</td>
