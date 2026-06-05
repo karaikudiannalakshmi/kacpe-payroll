@@ -11,8 +11,7 @@ import Holidays from'./pages/Holidays'
 import Payroll from'./pages/Payroll'
 import Loans from'./pages/Loans'
 
-const ADMIN_EMAIL=(import.meta.env.VITE_ADMIN_EMAIL||'').trim().toLowerCase()
-
+const ADMIN_EMAILS=(import.meta.env.VITE_ADMIN_EMAILS||'').split(',').map(e=>e.trim().toLowerCase()).filter(Boolean)
 export default function App(){
   const now=new Date()
   const[month,setMonth]=useState(now.getMonth()+1)
@@ -23,7 +22,7 @@ export default function App(){
 
   useEffect(()=>onAuthStateChanged(auth,u=>{
     setUser(u)
-    setRole(u?(u.email.trim().toLowerCase()===ADMIN_EMAIL?'admin':'operator'):null)
+    setRole(u?(ADMIN_EMAILS.includes(u.email.trim().toLowerCase())?'admin':'operator'):null)
     setLoading(false)
   }),[])
 
